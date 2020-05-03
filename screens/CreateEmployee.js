@@ -1,14 +1,78 @@
 import React, { useState } from "react";
-import { StyleSheet, Modal, View } from "react-native";
+import { StyleSheet, Modal, View, Alert } from "react-native";
 import { TextInput, Button } from "react-native-paper";
+import * as ImagePicker from "expo-image-picker";
+import Constants from "expo-constants";
+import * as Permissions from "expo-permissions";
 
-const CreateEmployee = () => {
+const CreateEmployee = (props) => {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [salary, setSalary] = useState("");
   const [pic, setPic] = useState("");
   const [modal, setModal] = useState(false);
+
+  const picFromGallary = async () => {
+    const granted = await Permissions.askAsync(Permissions.CAMERA_ROLL);
+    if(granted){
+      let data = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1,1],
+        quality: 0.6
+      });
+      if (!data.cancelled) {
+        let newFile = {
+          uri: data.uri,
+          type: `test/${data.uri.split('.')[1]}`,
+          name: `test.${data.uri.split('.')[1]}`
+        };
+        handleUpload(newFile);
+      }
+    }else {
+      Alert.alert("You need permission to work properly")
+    }
+  }
+
+  const picFromCamera = async () => {
+    const granted = await Permissions.askAsync(Permissions.CAMERA);
+    if(granted){
+      let data = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1,1],
+        quality: 0.6
+      });
+      if(!data.cancelled){
+        let newFile = {
+          uri: data.uri, 
+          type: `test/${data.uri.split('.')[1]}`, 
+          name: `test.${data.uri.split('.')[1]}`
+        };
+        handleUpload(newFile);
+      }
+    }else {
+      Alert.alert("You need permission to work properly")
+    }
+  }
+
+  const handleUpload = (image) => {
+    const data = new FormData();
+    data.append('file',image);
+    data.append('upload_preset',"employee");
+    data.append('cloud_name','bbs779');
+
+    fetch("https://api.cloudinary.com/v1_1/bbs779/image/upload",{
+      method: "post",
+      body: data
+    }).then(res => res.json())
+    .then(response => {
+      // console.log(response);
+      setPic(data.secure_url);
+      setModal(false);
+    })
+  }
 
   return (
     <View style={styles.root}>
@@ -47,7 +111,7 @@ const CreateEmployee = () => {
       />
       <Button
         style={styles.inputStyle}
-        icon="upload"
+        icon={pic == '' ? 'upload': 'check'}
         theme={theme}
         mode="contained"
         onPress={() => setModal(true)}
@@ -76,7 +140,7 @@ const CreateEmployee = () => {
               icon="camera"
               theme={theme}
               mode="contained"
-              onPress={() => console.log('camera Pressed')}
+              onPress={() => picFromCamera()}
             >
               Camera
             </Button>
@@ -84,7 +148,7 @@ const CreateEmployee = () => {
               icon="image-area"
               mode="contained"
               theme={theme}
-              onPress={() => console.log('gallery Pressed')}
+              onPress={() => picFromGallary()}
             >
               Gallery
             </Button>
@@ -113,11 +177,11 @@ const styles = StyleSheet.create({
   modalView: {
     position: "absolute",
     bottom: 0,
-    padding: 10,
-    borderTopLeftRadius: 15,
-    borderTopRightRadius: 15,
+    padding: 15,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
     width: "100%",
-    backgroundColor: "#ffffff"
+    backgroundColor: "#bdff91"
   }
 });
 
