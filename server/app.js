@@ -53,10 +53,7 @@ app.post('/post-data', (req, res) => {
 })
 
 app.post('/delete-data', (req, res) => {
-  const data = req.body.id;
-  console.log(data);
-  
-  Employee.findOneAndDelete({_id: data})
+  Employee.findOneAndDelete({_id: req.body._id})
     .then(result => {
       console.log(result);
       res.json(result);
@@ -70,7 +67,7 @@ app.post('/delete-data', (req, res) => {
 
 
 app.post('/update-data',(req, res) => {
-  Employee.findByIdAndUpdate(req.body.id, {
+  Employee.findByIdAndUpdate(req.body._id, {
     name: req.body.name,
     email: req.body.email,
     phone: req.body.phone,

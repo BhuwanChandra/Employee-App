@@ -1,21 +1,34 @@
-import React from 'react';
-import { StyleSheet, Text, View, Image, FlatList } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, Text, View, Alert, Image, FlatList } from 'react-native';
 import { Card, FAB } from 'react-native-paper';
 
 const Home = ({navigation}) => {
-    const data = [
-      { id: '1', name: "John Doe", email: 'john@gmail.com', salary: '8', phone: '7854545421', position: "web developer", picture: 'https://images.unsplash.com/photo-1586287011575-a23134f797f9?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=80'},
-      { id: '2', name: "Max Manus", email: 'max@gmail.com', salary: '18', phone: '7855465421', position: "android developer", picture: 'https://images.unsplash.com/photo-1586287011575-a23134f797f9?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=80'},
-      { id: '3', name: "Harry Potter", email: 'potter@gmail.com', salary: '12', phone: '7854545421', position: "web developer", picture: 'https://images.unsplash.com/photo-1586287011575-a23134f797f9?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=80'},
-      { id: '4', name: "Jessica Mathews", email: 'jessica@gmail.com', salary: '9', phone: '7854545421', position: "web developer", picture: 'https://images.unsplash.com/photo-1586287011575-a23134f797f9?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=80'},
-    ];
+    const [data, setData] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    const fetchData = () => {
+      fetch("http://10.0.2.2:8080/")
+      .then(res => {
+        setLoading(false);
+        return res.json();
+      })
+      .then(data => setData(data))
+      .catch(err => {
+        setLoading(false);
+        Alert.alert("something went wrong!");
+      });
+    }
+
+    useEffect(() => {
+      fetchData();
+    },[]);
 
     const renderItem = item => (
       <Card style={styles.card} onPress={() => navigation.navigate("Profile", {item})}>
         <View style={styles.cardView}>
           <Image
-            style={{ width: 80, height: 80, borderRadius: 40 }}
-            source={{ uri: 'https://images.unsplash.com/photo-1586287011575-a23134f797f9?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=80' }}
+            style={{ width: 80, height: 80, borderRadius: 40, backgroundColor: "#006aff" }}
+            source={{uri: item.picture}}
           />
           <View style={{ marginLeft: 10 }}>
             <Text style={styles.text}>{item.name}</Text>
@@ -28,9 +41,11 @@ const Home = ({navigation}) => {
     return (
       <View style={{flex: 1}}>
         <FlatList
+          onRefresh={() => fetchData()}
+          refreshing={loading}
           data={data}
           renderItem={({item}) => renderItem(item)}
-          keyExtractor={item => item.id}
+          keyExtractor={item => item._id}
         />
         <FAB 
           onPress={() => navigation.navigate("Create")}

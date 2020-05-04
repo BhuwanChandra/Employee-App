@@ -1,12 +1,12 @@
 import React from "react";
-import { StyleSheet, Text, View, Image, Linking, Platform } from "react-native";
+import { StyleSheet, Text, View, Image, Linking, Platform, Alert } from "react-native";
 import { Title, Card, Button } from "react-native-paper";
 import { LinearGradient } from "expo-linear-gradient";
 import { MaterialIcons } from "@expo/vector-icons";
 
-const Profile = props => {
+const Profile = (props) => {
   const {
-    id,
+    _id,
     name,
     picture,
     phone,
@@ -21,6 +21,26 @@ const Profile = props => {
       Linking.openURL(`telprompt:${num}`);
     }
   };
+
+  const deleteEmployee = () => {
+    fetch("http://10.0.2.2:8080/delete-data",{
+      method: "post",
+      headers: {
+        "Content-type": "application/json"
+      },
+      body: JSON.stringify({_id})
+    })
+      .then(res => {
+        return res.json();
+      })
+      .then(data => {
+        Alert.alert(`${data.name} is deleted successfully`);
+        props.navigation.navigate("Home");
+      })
+      .catch(err => {
+        Alert.alert("something went wrong!");
+      });
+  }
 
   return (
     <View style={styles.root}>
@@ -67,7 +87,7 @@ const Profile = props => {
             icon="account-edit"
             theme={theme}
             mode="contained"
-            onPress={() => console.log("camera Pressed")}
+            onPress={() => props.navigation.navigate("Create", props.route.params.item)}
           >
             Edit Employee
           </Button>
@@ -75,7 +95,7 @@ const Profile = props => {
             icon="delete"
             mode="contained"
             theme={theme}
-            onPress={() => console.log("gallery Pressed")}
+            onPress={() => deleteEmployee()}
           >
             Fire employee
           </Button>
@@ -95,6 +115,7 @@ const styles = StyleSheet.create({
   profileImage: {
     width: 150,
     height: 150,
+    backgroundColor: "#006aff",
     borderRadius: 75,
     borderColor: "#fff",
     borderWidth: 4
