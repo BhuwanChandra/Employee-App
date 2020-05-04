@@ -8,10 +8,26 @@ import * as Permissions from "expo-permissions";
 const CreateEmployee = (props) => {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [position, setPosition] = useState("");
   const [email, setEmail] = useState("");
   const [salary, setSalary] = useState("");
   const [pic, setPic] = useState("");
   const [modal, setModal] = useState(false);
+
+  const submitData = () => {
+    fetch("http://10.0.2.2:8080/post-data",{
+      method: "post",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        name,email,phone,salary,picture:pic,position
+      })
+    }).then(res => res.json())
+    .catch(err => {
+      console.log(err);
+    })
+  }
 
   const picFromGallary = async () => {
     const granted = await Permissions.askAsync(Permissions.CAMERA_ROLL);
@@ -103,6 +119,14 @@ const CreateEmployee = (props) => {
       />
       <TextInput
         style={styles.inputStyle}
+        label="Position"
+        value={position}
+        theme={theme}
+        mode="outlined"
+        onChangeText={text => setPosition(text)}
+      />
+      <TextInput
+        style={styles.inputStyle}
         label="Salary"
         value={salary}
         theme={theme}
@@ -123,7 +147,7 @@ const CreateEmployee = (props) => {
         icon="content-save"
         theme={theme}
         mode="contained"
-        onPress={() => console.log("Saved")}
+        onPress={() => submitData()}
       >
         Save
       </Button>
