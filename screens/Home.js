@@ -1,20 +1,29 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useContext } from 'react';
 import { StyleSheet, Text, View, Alert, Image, FlatList } from 'react-native';
 import { Card, FAB } from 'react-native-paper';
+import { useSelector, useDispatch } from 'react-redux';
+import { MyContext } from '../App';
 
 const Home = ({navigation}) => {
-    const [data, setData] = useState([]);
-    const [loading, setLoading] = useState(true);
 
+    // const dispatch = useDispatch();
+    // const {data, loading} = useSelector(state => {
+    //   return state;
+    // })
+
+    const {state, dispatch} = useContext(MyContext);
+    const {data, loading} = state;
     const fetchData = () => {
       fetch("http://10.0.2.2:8080/")
       .then(res => {
-        setLoading(false);
         return res.json();
       })
-      .then(data => setData(data))
+      .then(data => {
+        dispatch({type: "ADD_DATA",payload: data});
+        dispatch({type: "SET_LOADING",payload: false});
+      })
       .catch(err => {
-        setLoading(false);
+        dispatch({ type: "SET_LOADING", payload: false });
         Alert.alert("something went wrong!");
       });
     }
